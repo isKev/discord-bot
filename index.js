@@ -1,42 +1,33 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import express from "express";
 import dotenv from "dotenv";
 
+// Cargar variables del entorno desde Render (.env)
 dotenv.config();
 
-const app = express();
-app.use(express.json());
-
-// Crear cliente de Discord
+// Crear el cliente de Discord con los Intents básicos
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [
+    GatewayIntentBits.Guilds, // Necesario para slash commands
+    GatewayIntentBits.GuildMessages, // Leer mensajes
+    GatewayIntentBits.MessageContent // Leer el contenido de los mensajes
+  ]
 });
 
-// Cuando el bot se conecta
+// Cuando el bot se conecta correctamente
 client.once("ready", () => {
   console.log(`✅ Bot conectado como ${client.user.tag}`);
 });
 
-// Endpoint para recibir mensajes desde Minecraft
-app.post("/minecraft-chat", async (req, res) => {
-  const { username, message } = req.body;
+// Evento: cuando alguien manda un mensaje
+client.on("messageCreate", (message) => {
+  // Ignorar mensajes del propio bot
+  if (message.author.bot) return;
 
-  // Canal donde se mandarán los mensajes (pon tu canal aquí 👇)
-  const channelId = "TU_CANAL_ID";
-
-  try {
-    const channel = await client.channels.fetch(channelId);
-    await channel.send(`💬 **${username}**: ${message}`);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("Error enviando mensaje:", error);
-    res.sendStatus(500);
+  // Ejemplo simple de comando
+  if (message.content === "!ping") {
+    message.reply("🏓 Pong!");
   }
 });
 
-// Render usa el puerto asignado automáticamente
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🌐 API escuchando en puerto ${PORT}`));
-
-// Iniciar el bot
+// Iniciar sesión con el token desde las variables de entorno
 client.login(process.env.DISCORD_TOKEN);
