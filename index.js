@@ -1,25 +1,33 @@
-import express from "express";
 import { Client, GatewayIntentBits } from "discord.js";
+import dotenv from "dotenv";
 
-const app = express();
-const PORT = process.env.PORT || 10000;
+// Cargar variables del entorno desde Render (.env)
+dotenv.config();
 
-// Render necesita que haya un servidor web activo
-app.get("/", (req, res) => res.send("Bot funcionando correctamente 🚀"));
-app.listen(PORT, () => console.log(`Servidor web escuchando en ${PORT}`));
-
-// Configura el bot de Discord
+// Crear el cliente de Discord con los Intents básicos
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+  intents: [
+    GatewayIntentBits.Guilds, // Necesario para slash commands
+    GatewayIntentBits.GuildMessages, // Leer mensajes
+    GatewayIntentBits.MessageContent // Leer el contenido de los mensajes
+  ]
 });
 
+// Cuando el bot se conecta correctamente
 client.once("ready", () => {
   console.log(`✅ Bot conectado como ${client.user.tag}`);
 });
 
-client.on("messageCreate", (msg) => {
-  if (msg.content === "!ping") msg.reply("🏓 Pong!");
+// Evento: cuando alguien manda un mensaje
+client.on("messageCreate", (message) => {
+  // Ignorar mensajes del propio bot
+  if (message.author.bot) return;
+
+  // Ejemplo simple de comando
+  if (message.content === "!ping") {
+    message.reply("🏓 Pong!");
+  }
 });
 
-// Inicia sesión con el token del bot (se pone como variable de entorno en Render)
+// Iniciar sesión con el token desde las variables de entorno
 client.login(process.env.DISCORD_TOKEN);
